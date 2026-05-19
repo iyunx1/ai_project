@@ -11,7 +11,11 @@ import streamlit as st
 import folium
 from streamlit_folium import st_folium
 
-st.set_page_config(page_title="서울 인기 관광지 TOP10", layout="wide")
+# 페이지 설정
+st.set_page_config(
+    page_title="서울 인기 관광지 TOP10",
+    layout="wide"
+)
 
 st.title("🇰🇷 외국인들이 좋아하는 서울 관광지 TOP10")
 st.markdown("서울의 대표 관광지를 지도에서 확인해보세요! ✨")
@@ -81,30 +85,35 @@ places = [
 ]
 
 # 서울 중심 지도 생성
-m = folium.Map(location=[37.5665, 126.9780], zoom_start=11)
+seoul_map = folium.Map(
+    location=[37.5665, 126.9780],
+    zoom_start=11
+)
 
 # 파란색 마커 추가
 for place in places:
     folium.Marker(
         location=place["location"],
-        tooltip=f"가까운 지하철역: {place['station']}",
         popup=place["name"],
+        tooltip=f"가까운 지하철역: {place['station']}",
         icon=folium.Icon(color="blue", icon="info-sign")
-    ).add_to(m)
+    ).add_to(seoul_map)
 
 # 지도 출력
-st_folium(m, width=1200, height=600)
+st_folium(seoul_map, width=1200, height=600)
 
 st.markdown("---")
 st.subheader("🚇 관광지 & 가까운 지하철역 정보")
 
-# 관광지 설명 출력
+# 관광지 설명
 for idx, place in enumerate(places, start=1):
-    st.markdown(f"""
+    st.markdown(
+        f"""
 ### {idx}. 📍 {place['name']}
 - 🚉 가까운 지하철역: **{place['station']}**
 - 🎈 놀거리: {place['fun']}
-""")
+        """
+    )
 
 st.markdown("---")
 st.caption("Made with Streamlit + Folium 💙")
