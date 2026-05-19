@@ -1,214 +1,401 @@
 import streamlit as st
 
-# 페이지 설정
 st.set_page_config(
-    page_title="✨ MBTI 책 & 영화 추천 🎬📚",
-    page_icon="🌟",
+    page_title="✨ MBTI 책 & 영화 추천기 ✨",
+    page_icon="📚",
     layout="centered"
 )
 
-# 제목
-st.title("🌈 MBTI별 책 & 영화 추천 서비스 🎥📖")
-st.markdown("### 😎 너의 MBTI에 딱 맞는 감성 작품을 추천해줄게!")
-st.write("취향 저격 받을 준비됐지? 🎯")
-
+# =========================
 # MBTI 데이터
+# =========================
+
 mbti_data = {
     "INTJ": {
+        "nickname": "🧠 전략가형",
         "books": [
             {
                 "title": "1984",
                 "author": "조지 오웰",
-                "year": "1900년대 📚",
-                "desc": "통찰력 강한 INTJ에게 딱 맞는 디스토피아 명작 😎"
+                "year": "1900년대",
+                "desc": "세상을 분석하는 걸 좋아하는 INTJ에게 딱 맞는 디스토피아 명작!"
             },
             {
                 "title": "아몬드",
                 "author": "손원평",
-                "year": "2000년대 이후 ✨",
-                "desc": "감정과 인간관계를 깊게 생각하게 만드는 책 💭"
+                "year": "2000년대 이후",
+                "desc": "감정을 이해해가는 성장 이야기가 INTJ의 깊은 사고와 잘 어울려 😊"
             }
         ],
         "movies": [
-            {
-                "title": "포레스트 검프",
-                "year": "1994 🇺🇸",
-                "desc": "인생의 의미를 생각하게 하는 감동 영화 🏃"
-            },
-            {
-                "title": "쇼생크 탈출",
-                "year": "1994 🇺🇸",
-                "desc": "끈기와 전략을 좋아하는 INTJ 취향 저격 🔥"
-            }
+            "시민 케인 (1941) 🎬",
+            "카사블랑카 (1942) 🎥"
         ]
     },
 
-    "INFP": {
+    "INTP": {
+        "nickname": "🔍 논리술사형",
         "books": [
             {
-                "title": "데미안",
-                "author": "헤르만 헤세",
-                "year": "1900년대 📚",
-                "desc": "자아를 찾아가는 감성 폭발 성장소설 🌙"
-            },
-            {
-                "title": "불편한 편의점",
-                "author": "김호연",
-                "year": "2000년대 이후 ✨",
-                "desc": "따뜻한 위로가 필요한 날 읽기 좋은 책 ☕"
-            }
-        ],
-        "movies": [
-            {
-                "title": "타이타닉",
-                "year": "1997 🇺🇸",
-                "desc": "감성 충만 로맨스와 감동 💖"
-            },
-            {
-                "title": "죽은 시인의 사회",
-                "year": "1989 🇺🇸",
-                "desc": "꿈과 자유를 사랑하는 INFP에게 추천 🍃"
-            }
-        ]
-    },
-
-    "ENFP": {
-        "books": [
-            {
-                "title": "어린 왕자",
-                "author": "생텍쥐페리",
-                "year": "1900년대 📚",
-                "desc": "상상력 가득한 감성 명작 🦊"
+                "title": "멋진 신세계",
+                "author": "올더스 헉슬리",
+                "year": "1900년대",
+                "desc": "미래 사회를 철학적으로 고민하게 만드는 작품!"
             },
             {
                 "title": "달러구트 꿈 백화점",
                 "author": "이미예",
-                "year": "2000년대 이후 ✨",
-                "desc": "꿈과 판타지를 좋아하는 ENFP에게 딱 🌈"
+                "year": "2000년대 이후",
+                "desc": "상상력 가득한 세계관이 INTP 취향 저격 ✨"
             }
         ],
         "movies": [
+            "오즈의 마법사 (1939) 🌈",
+            "모던 타임즈 (1936) ⚙️"
+        ]
+    },
+
+    "ENTJ": {
+        "nickname": "👑 통솔자형",
+        "books": [
             {
-                "title": "라라랜드",
-                "year": "2016 🇺🇸",
-                "desc": "열정과 낭만 가득한 영화 🎹"
+                "title": "동물농장",
+                "author": "조지 오웰",
+                "year": "1900년대",
+                "desc": "권력과 리더십에 대한 날카로운 이야기!"
             },
             {
-                "title": "백 투 더 퓨처",
-                "year": "1985 🇺🇸",
-                "desc": "모험심 강한 ENFP에게 추천 🚀"
+                "title": "불편한 편의점",
+                "author": "김호연",
+                "year": "2000년대 이후",
+                "desc": "사람을 움직이는 따뜻한 리더십을 느낄 수 있어 😊"
             }
+        ],
+        "movies": [
+            "바람과 함께 사라지다 (1939) 🍃",
+            "킹콩 (1933) 🦍"
+        ]
+    },
+
+    "ENTP": {
+        "nickname": "⚡ 발명가형",
+        "books": [
+            {
+                "title": "위대한 개츠비",
+                "author": "F. 스콧 피츠제럴드",
+                "year": "1900년대",
+                "desc": "화려함 속 인간 욕망을 탐구하는 명작!"
+            },
+            {
+                "title": "지구 끝의 온실",
+                "author": "김초엽",
+                "year": "2000년대 이후",
+                "desc": "독특한 상상력과 SF 감성이 ENTP 스타일 🚀"
+            }
+        ],
+        "movies": [
+            "메트로폴리스 (1927) 🤖",
+            "프랑켄슈타인 (1931) ⚡"
+        ]
+    },
+
+    "INFJ": {
+        "nickname": "🌙 옹호자형",
+        "books": [
+            {
+                "title": "데미안",
+                "author": "헤르만 헤세",
+                "year": "1900년대",
+                "desc": "자아를 찾아가는 과정이 INFJ 감성을 자극해!"
+            },
+            {
+                "title": "완득이",
+                "author": "김려령",
+                "year": "2000년대 이후",
+                "desc": "사람과 관계의 따뜻함을 느낄 수 있는 이야기 💛"
+            }
+        ],
+        "movies": [
+            "백설공주와 일곱 난쟁이 (1937) 🍎",
+            "시티 라이트 (1931) 💡"
+        ]
+    },
+
+    "INFP": {
+        "nickname": "🎨 중재자형",
+        "books": [
+            {
+                "title": "어린 왕자",
+                "author": "생텍쥐페리",
+                "year": "1900년대",
+                "desc": "감성 폭발... INFP의 인생책 후보 👑"
+            },
+            {
+                "title": "페인트",
+                "author": "이희영",
+                "year": "2000년대 이후",
+                "desc": "자아와 가족에 대한 깊은 질문을 던지는 작품!"
+            }
+        ],
+        "movies": [
+            "피노키오 (1940) 🤥",
+            "덤보 (1941) 🐘"
+        ]
+    },
+
+    "ENFJ": {
+        "nickname": "💖 선도자형",
+        "books": [
+            {
+                "title": "나의 라임오렌지나무",
+                "author": "J. M. 바스콘셀로스",
+                "year": "1900년대",
+                "desc": "따뜻한 감성과 공감 능력을 자극하는 명작!"
+            },
+            {
+                "title": "미드나잇 라이브러리",
+                "author": "매트 헤이그",
+                "year": "2000년대 이후",
+                "desc": "삶의 선택과 의미를 돌아보게 해줘 🌟"
+            }
+        ],
+        "movies": [
+            "오페라의 유령 (1925) 🎭",
+            "채플린의 황금광시대 (1925) 🏔️"
+        ]
+    },
+
+    "ENFP": {
+        "nickname": "🌈 활동가형",
+        "books": [
+            {
+                "title": "호밀밭의 파수꾼",
+                "author": "J. D. 샐린저",
+                "year": "1900년대",
+                "desc": "자유롭고 솔직한 감성이 ENFP와 찰떡!"
+            },
+            {
+                "title": "죽이고 싶은 아이",
+                "author": "이꽃님",
+                "year": "2000년대 이후",
+                "desc": "몰입감 최고! 상상력 풍부한 ENFP 추천 🔥"
+            }
+        ],
+        "movies": [
+            "톰 소여의 모험 (1938) 🛶",
+            "로빈 후드의 모험 (1938) 🏹"
         ]
     },
 
     "ISTJ": {
+        "nickname": "📘 현실주의자형",
+        "books": [
+            {
+                "title": "죄와 벌",
+                "author": "도스토예프스키",
+                "year": "1900년대",
+                "desc": "논리와 도덕을 고민하게 만드는 깊은 작품!"
+            },
+            {
+                "title": "세계를 건너 너에게 갈게",
+                "author": "이꽃님",
+                "year": "2000년대 이후",
+                "desc": "차분한 감동이 오래 남는 이야기 📮"
+            }
+        ],
+        "movies": [
+            "국가의 탄생 (1915) 🎞️",
+            "벤허 (1925) 🐎"
+        ]
+    },
+
+    "ISFJ": {
+        "nickname": "🍀 수호자형",
+        "books": [
+            {
+                "title": "빨간 머리 앤",
+                "author": "루시 모드 몽고메리",
+                "year": "1900년대",
+                "desc": "따뜻하고 사랑스러운 감성이 ISFJ와 잘 어울려!"
+            },
+            {
+                "title": "아가미",
+                "author": "구병모",
+                "year": "2000년대 이후",
+                "desc": "섬세한 감정선이 매력적인 작품 🐟"
+            }
+        ],
+        "movies": [
+            "바스터 키튼의 셜록 주니어 (1924) 🕵️",
+            "노스페라투 (1922) 🦇"
+        ]
+    },
+
+    "ESTJ": {
+        "nickname": "📈 관리자형",
         "books": [
             {
                 "title": "노인과 바다",
                 "author": "어니스트 헤밍웨이",
-                "year": "1900년대 📚",
-                "desc": "끈기와 책임감을 보여주는 명작 🎣"
+                "year": "1900년대",
+                "desc": "끈기와 책임감을 보여주는 명작!"
             },
             {
-                "title": "세이노의 가르침",
-                "author": "세이노",
-                "year": "2000년대 이후 ✨",
-                "desc": "현실적이고 목표지향적인 사람에게 추천 💪"
+                "title": "트렌드 코리아",
+                "author": "김난도",
+                "year": "2000년대 이후",
+                "desc": "현실 감각 뛰어난 ESTJ에게 추천 📊"
             }
         ],
         "movies": [
+            "대부호 (1924) 💰",
+            "스팀보트 빌 주니어 (1928) 🚢"
+        ]
+    },
+
+    "ESFJ": {
+        "nickname": "🎉 사교관형",
+        "books": [
             {
-                "title": "라이언 일병 구하기",
-                "year": "1998 🇺🇸",
-                "desc": "책임감과 팀워크가 돋보이는 영화 🎖️"
+                "title": "작은 아씨들",
+                "author": "루이자 메이 올컷",
+                "year": "1900년대",
+                "desc": "가족과 사랑 이야기를 좋아한다면 추천 💕"
             },
             {
-                "title": "머니볼",
-                "year": "2011 🇺🇸",
-                "desc": "논리와 전략을 좋아한다면 강추 ⚾"
+                "title": "어서 오세요, 휴남동 서점입니다",
+                "author": "황보름",
+                "year": "2000년대 이후",
+                "desc": "따뜻한 사람 이야기가 가득한 힐링 소설!"
             }
+        ],
+        "movies": [
+            "42번가 (1933) 💃",
+            "사운드 오브 뮤직 이전 시대 뮤지컬 영화 (1930년대) 🎶"
+        ]
+    },
+
+    "ISTP": {
+        "nickname": "🛠️ 장인형",
+        "books": [
+            {
+                "title": "해저 2만리",
+                "author": "쥘 베른",
+                "year": "1900년대",
+                "desc": "모험과 기계 감성이 가득한 작품!"
+            },
+            {
+                "title": "위저드 베이커리",
+                "author": "구병모",
+                "year": "2000년대 이후",
+                "desc": "신비로운 분위기가 ISTP 취향 저격 🍰"
+            }
+        ],
+        "movies": [
+            "제너럴 (1926) 🚂",
+            "잃어버린 세계 (1925) 🌋"
+        ]
+    },
+
+    "ISFP": {
+        "nickname": "🎵 예술가형",
+        "books": [
+            {
+                "title": "변신",
+                "author": "프란츠 카프카",
+                "year": "1900년대",
+                "desc": "독특한 감성과 분위기를 좋아한다면 추천!"
+            },
+            {
+                "title": "칵테일, 러브, 좀비",
+                "author": "조예은",
+                "year": "2000년대 이후",
+                "desc": "감각적이고 개성 넘치는 이야기 🍹"
+            }
+        ],
+        "movies": [
+            "선라이즈 (1927) 🌅",
+            "판도라의 상자 (1929) 📦"
+        ]
+    },
+
+    "ESTP": {
+        "nickname": "🏎️ 사업가형",
+        "books": [
+            {
+                "title": "80일간의 세계일주",
+                "author": "쥘 베른",
+                "year": "1900년대",
+                "desc": "스릴 넘치는 모험이 ESTP 스타일!"
+            },
+            {
+                "title": "체리새우: 비밀글입니다",
+                "author": "황영미",
+                "year": "2000년대 이후",
+                "desc": "현실적이면서도 재밌는 청소년 소설 😎"
+            }
+        ],
+        "movies": [
+            "스카페이스 (1932) 🔫",
+            "킹콩 (1933) 🦍"
+        ]
+    },
+
+    "ESFP": {
+        "nickname": "🎤 연예인형",
+        "books": [
+            {
+                "title": "오즈의 마법사",
+                "author": "L. 프랭크 바움",
+                "year": "1900년대",
+                "desc": "신나는 모험과 판타지가 가득 🌈"
+            },
+            {
+                "title": "오늘 밤, 세계에서 이 사랑이 사라진다 해도",
+                "author": "이치조 미사키",
+                "year": "2000년대 이후",
+                "desc": "감정 몰입 최고인 인기 소설 💖"
+            }
+        ],
+        "movies": [
+            "춤추는 뉴욕 (1940년대) 💃",
+            "재즈 싱어 (1927) 🎙️"
         ]
     }
 }
 
-# 나머지 MBTI 자동 채우기
-default_data = {
-    "books": [
-        {
-            "title": "위대한 개츠비",
-            "author": "F. 스콧 피츠제럴드",
-            "year": "1900년대 📚",
-            "desc": "인간의 욕망과 꿈을 다룬 고전 명작 ✨"
-        },
-        {
-            "title": "아주 작은 습관의 힘",
-            "author": "제임스 클리어",
-            "year": "2000년대 이후 ✨",
-            "desc": "자기계발 좋아하는 사람들에게 인기 👍"
-        }
-    ],
-    "movies": [
-        {
-            "title": "인터스텔라",
-            "year": "2014 🇺🇸",
-            "desc": "몰입감 최고인 SF 영화 🚀"
-        },
-        {
-            "title": "어벤져스",
-            "year": "2012 🇺🇸",
-            "desc": "팀플과 액션 좋아하면 무조건 😆"
-        }
-    ]
-}
+# =========================
+# 제목
+# =========================
 
-all_mbti = [
-    "INTJ", "INTP", "ENTJ", "ENTP",
-    "INFJ", "INFP", "ENFJ", "ENFP",
-    "ISTJ", "ISFJ", "ESTJ", "ESFJ",
-    "ISTP", "ISFP", "ESTP", "ESFP"
-]
+st.title("✨ MBTI별 책 & 영화 추천 🎬📚")
+st.write("너의 MBTI에 딱 맞는 감성 작품을 추천해줄게 😎")
 
-for mbti in all_mbti:
-    if mbti not in mbti_data:
-        mbti_data[mbti] = default_data
-
-# MBTI 선택
 selected_mbti = st.selectbox(
-    "🧠 너의 MBTI를 골라줘!",
-    all_mbti
+    "💡 너의 MBTI를 골라봐!",
+    list(mbti_data.keys())
 )
 
-# 결과 출력
-if selected_mbti:
-    data = mbti_data[selected_mbti]
+data = mbti_data[selected_mbti]
 
-    st.success(f"🎉 {selected_mbti} 유형 추천 결과야!")
+st.header(f"{selected_mbti} {data['nickname']}")
 
-    st.markdown("---")
+st.subheader("📚 추천 책 2권")
 
-    # 책 추천
-    st.header("📚 추천 책 2권")
+for book in data["books"]:
+    st.markdown(f"""
+    ### 📖 {book['title']}
+    - ✍️ 작가: **{book['author']}**
+    - 🕰️ 시대: **{book['year']}**
+    - 💬 한줄 추천: {book['desc']}
+    """)
 
-    for book in data["books"]:
-        st.subheader(f"✨ {book['title']}")
-        st.write(f"👨‍💻 작가: {book['author']}")
-        st.write(f"🕰️ 시대: {book['year']}")
-        st.write(f"💡 추천 이유: {book['desc']}")
-        st.markdown("")
+st.subheader("🎞️ 추천 영화 2개")
 
-    st.markdown("---")
+for movie in data["movies"]:
+    st.write(f"- {movie}")
 
-    # 영화 추천
-    st.header("🎬 추천 영화 2편")
+st.divider()
 
-    for movie in data["movies"]:
-        st.subheader(f"🍿 {movie['title']}")
-        st.write(f"📅 개봉: {movie['year']}")
-        st.write(f"🔥 추천 이유: {movie['desc']}")
-        st.markdown("")
-
-    st.balloons()
-
-# 하단 문구
-st.markdown("---")
-st.caption("🌟 오늘의 작품 추천 완료! 재밌게 감상해봐 😆")
+st.success("✨ 오늘의 작품 추천 완료! 재밌게 즐겨봐 😆")
+st.caption("📌 MBTI는 재미로 보는 거니까 너무 진지하게 믿진 말기!")
