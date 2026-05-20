@@ -1,6 +1,6 @@
 # 🗺️ 서울 인기 관광지 TOP10 지도 앱 (Streamlit + Folium)
 
-아래 파일 2개를 그대로 만들어서 Streamlit Cloud에 업로드하면 실행됩니다.
+아래 내용을 그대로 사용하세요.
 
 ---
 
@@ -12,13 +12,11 @@ import folium
 from streamlit_folium import st_folium
 
 # 페이지 설정
-st.set_page_config(
-    page_title="서울 인기 관광지 TOP10",
-    layout="wide"
-)
+st.set_page_config(page_title="서울 인기 관광지 TOP10", layout="wide")
 
+# 제목
 st.title("🇰🇷 외국인들이 좋아하는 서울 관광지 TOP10")
-st.markdown("서울의 대표 관광지를 지도에서 확인해보세요! ✨")
+st.write("서울의 대표 관광지를 지도에서 확인해보세요! ✨")
 
 # 관광지 데이터
 places = [
@@ -84,36 +82,34 @@ places = [
     }
 ]
 
-# 서울 중심 지도 생성
+# 지도 생성
 seoul_map = folium.Map(
     location=[37.5665, 126.9780],
     zoom_start=11
 )
 
-# 파란색 마커 추가
+# 마커 추가
 for place in places:
     folium.Marker(
         location=place["location"],
         popup=place["name"],
         tooltip=f"가까운 지하철역: {place['station']}",
-        icon=folium.Icon(color="blue", icon="info-sign")
+        icon=folium.Icon(color="blue")
     ).add_to(seoul_map)
 
 # 지도 출력
 st_folium(seoul_map, width=1200, height=600)
 
+# 설명 영역
 st.markdown("---")
-st.subheader("🚇 관광지 & 가까운 지하철역 정보")
+st.subheader("🚇 관광지 정보")
 
-# 관광지 설명
 for idx, place in enumerate(places, start=1):
-    st.markdown(
-        f"""
+    st.markdown(f"""
 ### {idx}. 📍 {place['name']}
 - 🚉 가까운 지하철역: **{place['station']}**
 - 🎈 놀거리: {place['fun']}
-        """
-    )
+""")
 
 st.markdown("---")
 st.caption("Made with Streamlit + Folium 💙")
@@ -131,21 +127,10 @@ streamlit-folium
 
 ---
 
-# 🚀 Streamlit Cloud 배포 방법
+# 🚀 실행 방법
 
-1. GitHub에 `app.py`와 `requirements.txt` 업로드
-2. Streamlit Cloud 접속
-3. GitHub 저장소 연결
-4. Main file path를 `app.py`로 설정
-5. Deploy 클릭
-
----
-
-# ✨ 앱 기능
-
-* 서울 인기 관광지 TOP10 표시
-* Folium 지도 사용
-* 파란색 마커 표시
-* 마우스를 올리면 가까운 지하철역 표시
-* 관광지별 놀거리 설명 제공
-* Streamlit Cloud에서 바로 실행 가능
+1. app.py 생성
+2. requirements.txt 생성
+3. GitHub 업로드
+4. Streamlit Cloud 배포
+5. Main file path를 app.py로 설정
