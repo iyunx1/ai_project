@@ -126,14 +126,14 @@ places = [
     }
 ]
 
-# 컬러 지도 생성 + 한국어 타일
+# 지도 생성
 seoul_map = folium.Map(
     location=[37.5665, 126.9780],
     zoom_start=11,
     tiles="OpenStreetMap"
 )
 
-# 마커 추가
+# 🔵 파란색 마커 추가
 for place in places:
     folium.Marker(
         location=place["location"],
@@ -142,7 +142,10 @@ for place in places:
         🚉 {place['station']}
         """,
         tooltip=place["name"],
-        icon=folium.Icon(color="red", icon="star")
+        icon=folium.Icon(
+            color="blue",
+            icon="info-sign"
+        )
     ).add_to(seoul_map)
 
 # 지도 출력 (기존보다 약 60% 크기)
@@ -159,7 +162,7 @@ selected_place = st.selectbox(
     [place["name"] for place in places]
 )
 
-# 선택된 관광지 찾기
+# 선택된 관광지 정보 출력
 for place in places:
     if place["name"] == selected_place:
         st.markdown(f"""
