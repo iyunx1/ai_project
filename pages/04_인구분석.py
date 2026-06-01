@@ -3,14 +3,14 @@ import pandas as pd
 import plotly.graph_objects as go
 
 st.set_page_config(
-    page_title="성북구 동별 인구 분석",
+    page_title="성북구 연령대별 인구 분석",
     page_icon="📊",
     layout="wide"
 )
 
-st.title("📊 성북구 동별 연령 인구 분석")
+st.title("📊 성북구 연령대별 인구 많은 동 찾기")
 
-# CSV 읽기
+# CSV 불러오기
 try:
     df = pd.read_csv("population.csv", encoding="cp949")
 except:
@@ -19,97 +19,86 @@ except:
 # 컬럼명 공백 제거
 df.columns = df.columns.str.strip()
 
-# 첫 번째 컬럼을 동 이름 컬럼으로 사용
+# 첫 번째 컬럼 = 동 이름
 dong_col = df.columns[0]
 
-# 연령대 컬럼 자동 찾기
-age_cols = []
-for col in df.columns:
-    if ("세" in str(col)) or ("이상" in str(col)):
-        age_cols.append(col)
-
-# 총계 컬럼 찾기
-total_col = None
-for col in df.columns:
-    if "계" in str(col):
-        total_col = col
-        break
-
-# 데이터 확인
-st.sidebar.subheader("데이터 정보")
-st.sidebar.write(f"동 컬럼: {dong_col}")
-st.sidebar.write(f"연령 컬럼 수: {len(age_cols)}")
+# 연령대 컬럼 찾기
+age_cols = [
+    col for col in df.columns
+    if ("세" in str(col)) or ("이상" in str(col))
+]
 
 # 전체 행 제거
-dong_df = df.copy()
+df = df.iloc[1:].copy()
 
-if len(dong_df) > 1:
-    dong_df = dong_df.iloc[1:]
+st.subheader("연령대를 선택하세요")
 
-# 동 선택
-selected_dong = st.selectbox(
-    "🏘️ 동을 선택하세요",
-    dong_df[dong_col].tolist()
+selected_age = st.selectbox(
+    "연령대",
+    age_cols
 )
 
-# 선택 데이터
-row = dong_df[dong_df[dong_col] == selected_dong].iloc[0]
+# 숫자 변환
+df[selected_age] = (
+    df[selected_age]
+    .astype(str)
+    .str.replace(",", "", regex=False)
+)
 
-# 인구 데이터
-population = []
-for col in age_cols:
-    try:
-        population.append(int(str(row[col]).replace(",", "")))
-    except:
-        population.append(0)
+df[selected_age] = pd.to_numeric(
+    df[selected_age],
+    errors="coerce"
+).fillna(0)
+
+# 정렬
+top_df = df.sort_values(
+    selected_age,
+    ascending=False
+)
+
+# 상위 10개
+top10 = top_df.head(10)
+
+# 색상
+colors = ["hotpink"] + ["lightgreen"] * (len(top10) - 1)
 
 # 그래프
 fig = go.Figure()
 
 fig.add_trace(
-    go.Scatter(
-        x=age_cols,
-        y=population,
-        mode="lines+markers",
-        line=dict(
-            color="#87CEEB",
-            width=4
-        ),
-        marker=dict(
-            color="#87CEEB",
-            size=8
-        )
+    go.Bar(
+        x=top10[selected_age],
+        y=top10[dong_col],
+        orientation="h",
+        marker_color=colors
     )
 )
 
 fig.update_layout(
-    title=f"{selected_dong} 연령별 인구 분포",
+    title=f"{selected_age} 인구가 많은 동 TOP 10",
+    xaxis_title="인구수",
+    yaxis_title="행정동",
     plot_bgcolor="#f5f5f5",
     paper_bgcolor="#f5f5f5",
-    xaxis_title="나이",
-    yaxis_title="인구수",
-    height=600
-)
-
-fig.update_xaxes(
-    showgrid=True,
-    gridcolor="lightgray"
+    height=700
 )
 
 fig.update_yaxes(
-    showgrid=True,
-    gridcolor="lightgray"
+    autorange="reversed"
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
-# 총 인구
-if total_col:
-    st.metric(
-        "👥 총 인구",
-        f"{int(str(row[total_col]).replace(',', '')):,}명"
-    )
+# 순위표
+st.subheader("🏆 순위")
 
-# 원본 데이터 보기
-with st.expander("원본 데이터 확인"):
-    st.dataframe(df)
+rank_df = top10[[dong_col, selected_age]].reset_index(drop=True)
+rank_df.index = rank_df.index + 1
+
+st.dataframe(
+    rank_df,
+    use_container_width=True
+)
