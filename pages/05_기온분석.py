@@ -4,68 +4,119 @@ import numpy as np
 import plotly.graph_objects as go
 from sklearn.linear_model import LinearRegression
 
+# -------------------
+# 페이지 설정
+# -------------------
 st.set_page_config(
-    page_title="서울 기온 분석 및 예측",
+    page_title="서울 기온 분석",
     page_icon="🌡️",
     layout="wide"
 )
 
 st.title("🌡️ 서울 기온 분석 및 미래 예측")
 
-# --------------------
+# -------------------
 # 데이터 불러오기
-# --------------------
+# -------------------
 @st.cache_data
 def load_data():
 
-    try:
-        df = pd.read_csv("seoul.csv", encoding="cp949")
-    except:
+    encodings = ["cp949", "euc-kr", "utf-8"]
+
+    df = None
+
+    for enc in encodings:
         try:
-            df = pd.read_csv("seoul.csv", encoding="utf-8")
+            df = pd.read_csv("seoul.csv", encoding=enc)
+            break
         except:
-            df = pd.read_csv("seoul.csv", encoding="euc-kr")
+            pass
+
+    if df is None:
+        st.error("CSV 파일을 읽을 수 없습니다.")
+        st.stop()
 
     df.columns = df.columns.str.strip()
 
-    date_col = [c for c in df.columns if "날짜" in c][0]
+    # 날짜 컬럼 찾기
+    date_candidates = [c for c in df.columns if "날짜" in c]
 
+    if len(date_candidates) == 0:
+        st.error("날짜 컬럼을 찾을 수 없습니다.")
+        st.write(df.columns.tolist())
+        st.stop()
+
+    date_col = date_candidates[0]
+
+    # 날짜 변환
     df[date_col] = pd.to_datetime(
         df[date_col],
         errors="coerce"
     )
 
+    # 날짜 없는 행 제거
     df = df.dropna(subset=[date_col])
 
-    return df, date_col
+    # 기온 컬럼 찾기
+    max_col = [c for c in df.columns if "최고기온" in c][0]
+    min_col = [c for c in df.columns if "최저기온" in c][0]
+
+    # 숫자형 변환
+    df[max_col] = pd.to_numeric(
+        df[max_col],
+        errors="coerce"
+    )
+
+    df[min_col] = pd.to_numeric(
+        df[min_col],
+        errors="coerce"
+    )
+
+    # 결측치 제거
+    df = df.dropna(
+        subset=[
+            max_col,
+            min_col
+        ]
+    )
+
+    return df, date_col, max_col, min_col
 
 
-df, date_col = load_data()
+df, date_col, max_col, min_col = load_data()
 
-# --------------------
+# -------------------
 # 날짜 선택
-# --------------------
+# -------------------
+st.header("📅 날짜별 기온 확인")
+
 selected_date = st.date_input(
-    "📅 날짜 선택",
-    value=df[date_col].max().date()
+    "날짜를 선택하세요",
+    value=df[date_col].max().date(),
+    min_value=df[date_col].min().date(),
+    max_value=df[date_col].max().date()
 )
 
 selected_date = pd.to_datetime(selected_date)
+
 selected_year = selected_date.year
 
-year_df = df[df[date_col].dt.year == selected_year]
+year_df = df[
+    df[date_col].dt.year == selected_year
+]
 
-st.subheader(f"📈 {selected_year}년 기온 변화")
+# -------------------
+# 연도 그래프
+# -------------------
+st.subheader(f"{selected_year}년 기온 변화")
 
-# --------------------
-# 꺾은선 그래프
-# --------------------
 fig = go.Figure()
 
+# 최고기온
 fig.add_trace(
     go.Scatter(
         x=year_df[date_col],
-        y=year_df["최고기온(℃)"],
+        y=year_df[max_col],
         mode="lines",
         name="최고기온",
         line=dict(
@@ -75,10 +126,11 @@ fig.add_trace(
     )
 )
 
+# 최저기온
 fig.add_trace(
     go.Scatter(
         x=year_df[date_col],
-        y=year_df["최저기온(℃)"],
+        y=year_df[min_col],
         mode="lines",
         name="최저기온",
         line=dict(
@@ -86,6 +138,12 @@ fig.add_trace(
             width=3
         )
     )
+)
+
+fig.add_vline(
+    x=selected_date,
+    line_dash="dash",
+    line_color="green"
 )
 
 fig.update_layout(
@@ -96,41 +154,49 @@ fig.update_layout(
     hovermode="x unified"
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
-# --------------------
+# -------------------
 # 선택 날짜 정보
-# --------------------
+# -------------------
 selected_row = year_df[
-    year_df[date_col].dt.date == selected_date.date()
+    year_df[date_col].dt.date
+    == selected_date.date()
 ]
 
-if not selected_row.empty:
+st.subheader("📋 선택 날짜 정보")
 
-    st.subheader("📋 선택 날짜 정보")
+if not selected_row.empty:
 
     col1, col2 = st.columns(2)
 
     with col1:
         st.metric(
             "🔥 최고기온",
-            f"{selected_row.iloc[0]['최고기온(℃)']:.1f}℃"
+            f"{selected_row.iloc[0][max_col]:.1f}℃"
         )
 
     with col2:
         st.metric(
             "❄️ 최저기온",
-            f"{selected_row.iloc[0]['최저기온(℃)']:.1f}℃"
+            f"{selected_row.iloc[0][min_col]:.1f}℃"
         )
 
-# --------------------
-# 연도별 최고/최저 집계
-# --------------------
+# -------------------
+# 미래 예측
+# -------------------
+st.header("🔮 미래 기온 예측")
+
 annual = (
-    df.groupby(df[date_col].dt.year)
+    df.groupby(
+        df[date_col].dt.year
+    )
     .agg({
-        "최고기온(℃)": "max",
-        "최저기온(℃)": "min"
+        max_col: "max",
+        min_col: "min"
     })
     .reset_index()
 )
@@ -141,14 +207,25 @@ annual.columns = [
     "연간최저기온"
 ]
 
-# --------------------
-# 미래 연도 예측
-# --------------------
-st.header("🔮 미래 기온 예측")
+annual["연간최고기온"] = pd.to_numeric(
+    annual["연간최고기온"],
+    errors="coerce"
+)
+
+annual["연간최저기온"] = pd.to_numeric(
+    annual["연간최저기온"],
+    errors="coerce"
+)
+
+annual = annual.dropna()
+
+if len(annual) < 10:
+    st.error("예측에 사용할 데이터가 부족합니다.")
+    st.stop()
 
 future_year = st.slider(
-    "예측할 미래 연도",
-    min_value=2025,
+    "예측 연도 선택",
+    min_value=int(annual["연도"].max()) + 1,
     max_value=2100,
     value=2050
 )
@@ -157,11 +234,17 @@ X = annual[["연도"]]
 
 # 최고기온 모델
 model_max = LinearRegression()
-model_max.fit(X, annual["연간최고기온"])
+model_max.fit(
+    X,
+    annual["연간최고기온"]
+)
 
 # 최저기온 모델
 model_min = LinearRegression()
-model_min.fit(X, annual["연간최저기온"])
+model_min.fit(
+    X,
+    annual["연간최저기온"]
+)
 
 future_X = np.array([[future_year]])
 
@@ -182,9 +265,9 @@ with col2:
         f"{pred_min:.1f}℃"
     )
 
-# --------------------
-# 예측 시각화
-# --------------------
+# -------------------
+# 예측 그래프
+# -------------------
 future_years = np.arange(
     annual["연도"].max() + 1,
     future_year + 1
@@ -200,7 +283,6 @@ future_min = model_min.predict(
 
 fig2 = go.Figure()
 
-# 실제 최고기온
 fig2.add_trace(
     go.Scatter(
         x=annual["연도"],
@@ -211,7 +293,6 @@ fig2.add_trace(
     )
 )
 
-# 실제 최저기온
 fig2.add_trace(
     go.Scatter(
         x=annual["연도"],
@@ -222,7 +303,6 @@ fig2.add_trace(
     )
 )
 
-# 예측 최고기온
 fig2.add_trace(
     go.Scatter(
         x=future_years,
@@ -236,7 +316,6 @@ fig2.add_trace(
     )
 )
 
-# 예측 최저기온
 fig2.add_trace(
     go.Scatter(
         x=future_years,
@@ -251,11 +330,11 @@ fig2.add_trace(
 )
 
 fig2.update_layout(
-    title="서울 미래 기온 예측",
     height=650,
     xaxis_title="연도",
     yaxis_title="기온(℃)",
-    hovermode="x unified"
+    hovermode="x unified",
+    legend_title="범례"
 )
 
 st.plotly_chart(
@@ -264,5 +343,5 @@ st.plotly_chart(
 )
 
 st.info(
-    "예측값은 선형회귀 기반 단순 예측으로 실제 미래 기온과 다를 수 있습니다."
+    "※ 미래 기온은 과거 데이터의 추세를 이용한 선형회귀 예측 결과입니다."
 )
