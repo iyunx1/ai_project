@@ -1,113 +1,140 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+from pathlib import Path
 
 st.set_page_config(
-    page_title="연령대별 교통사고 사상자 분석",
+    page_title="연령별 교통사고 분석",
     page_icon="🚗",
     layout="wide"
 )
 
-st.title("🚗 연령대별 교통사고 사상자 분석")
+st.title("🚗 연령별 교통사고 부상자·사망자 분석")
 
-uploaded_file = st.file_uploader(
-    "CSV 파일을 업로드하세요",
-    type=["csv"]
+# CSV 파일 불러오기
+csv_path = Path(__file__).parent.parent / "jjjjjjjh.csv"
+df = pd.read_csv(csv_path, encoding="utf-8")
+
+# 컬럼명 공백 제거
+df.columns = df.columns.str.strip()
+
+# 연도 컬럼 찾기
+year_col = None
+for col in df.columns:
+    if "연도" in col:
+        year_col = col
+        break
+
+if year_col is None:
+    st.error("연도 컬럼을 찾을 수 없습니다.")
+    st.stop()
+
+# 연도 선택
+years = sorted(df[year_col].dropna().unique())
+selected_year = st.selectbox("📅 연도를 선택하세요", years)
+
+year_df = df[df[year_col] == selected_year]
+
+# 연령대 컬럼
+age_groups = [
+    "12세이하",
+    "13~15세",
+    "16~20세",
+    "21~30세",
+    "31~40세",
+    "41~50세",
+    "51~60세",
+    "61~64세",
+    "65세이상"
+]
+
+# 실제 컬럼명 찾기
+injury_cols = []
+death_cols = []
+
+for age in age_groups:
+    injury_match = None
+    death_match = None
+
+    for col in df.columns:
+        if age in col and "부상" in col:
+            injury_match = col
+        if age in col and "사망" in col:
+            death_match = col
+
+    injury_cols.append(injury_match)
+    death_cols.append(death_match)
+
+# 합계 계산
+injury_values = []
+death_values = []
+
+for icol, dcol in zip(injury_cols, death_cols):
+
+    if icol is not None:
+        injury_values.append(year_df[icol].sum())
+    else:
+        injury_values.append(0)
+
+    if dcol is not None:
+        death_values.append(year_df[dcol].sum())
+    else:
+        death_values.append(0)
+
+# 부상자 그래프
+st.subheader("🔵 연령별 부상자 수")
+
+fig1 = go.Figure()
+
+fig1.add_trace(
+    go.Scatter(
+        x=age_groups,
+        y=injury_values,
+        mode="lines+markers",
+        line=dict(color="blue", width=4),
+        marker=dict(size=8),
+        name="부상자"
+    )
 )
 
-if uploaded_file:
+fig1.update_layout(
+    xaxis_title="연령대",
+    yaxis_title="부상자 수",
+    height=500
+)
 
-    # CSV 읽기
-    df = pd.read_csv(uploaded_file, encoding="cp949")
+st.plotly_chart(fig1, use_container_width=True)
 
-    st.success("파일 업로드 완료!")
+# 사망자 그래프
+st.subheader("🔴 연령별 사망자 수")
 
-    # 연도 추출
-    year_cols = [col for col in df.columns if str(col).startswith("20")]
-    years = sorted(list(set([str(col).split(".")[0] for col in year_cols])))
+fig2 = go.Figure()
 
-    selected_year = st.selectbox(
-        "📅 연도 선택",
-        years
+fig2.add_trace(
+    go.Scatter(
+        x=age_groups,
+        y=death_values,
+        mode="lines+markers",
+        line=dict(color="red", width=4),
+        marker=dict(size=8),
+        name="사망자"
     )
+)
 
-    # 서울시 합계 행 찾기
-    total_df = df[
-        (df["자치구별(1)"] == "합계") &
-        (df["자치구별(2)"] == "소계")
-    ]
+fig2.update_layout(
+    xaxis_title="연령대",
+    yaxis_title="사망자 수",
+    height=500
+)
 
-    death_row = total_df[total_df["항목"] == "사망자수"]
-    injury_row = total_df[total_df["항목"] == "부상자수"]
+st.plotly_chart(fig2, use_container_width=True)
 
-    if not death_row.empty and not injury_row.empty:
+# 데이터 표
+result_df = pd.DataFrame({
+    "연령대": age_groups,
+    "부상자수": injury_values,
+    "사망자수": death_values
+})
 
-        age_labels = [
-            "12세 이하",
-            "13~19세",
-            "20~29세",
-            "30~39세",
-            "40~49세",
-            "50~59세",
-            "60~64세",
-            "65세 이상"
-        ]
-
-        injury_values = []
-        death_values = []
-
-        for age in age_labels:
-
-            col_name = f"{selected_year}.{age}"
-
-            if col_name in df.columns:
-
-                injury = injury_row.iloc[0][col_name]
-                death = death_row.iloc[0][col_name]
-
-                injury_values.append(int(injury))
-                death_values.append(int(death))
-
-        st.subheader(f"📊 {selected_year}년 연령대별 교통사고 사상자")
-
-        fig, ax = plt.subplots(figsize=(10, 5))
-
-        ax.plot(
-            age_labels,
-            injury_values,
-            marker="o",
-            linewidth=3,
-            color="blue",
-            label="부상자수"
-        )
-
-        ax.plot(
-            age_labels,
-            death_values,
-            marker="o",
-            linewidth=3,
-            color="red",
-            label="사망자수"
-        )
-
-        ax.set_xlabel("연령대")
-        ax.set_ylabel("인원수")
-        ax.set_title(f"{selected_year}년 연령대별 교통사고 사상자")
-        ax.legend()
-        ax.grid(True)
-
-        st.pyplot(fig)
-
-        result_df = pd.DataFrame({
-            "연령대": age_labels,
-            "부상자수": injury_values,
-            "사망자수": death_values
-        })
-
-        st.dataframe(
-            result_df,
-            use_container_width=True
-        )
-
-else:
-    st.info("CSV 파일을 업로드해주세요.")
+st.subheader("📋 데이터")
+st.dataframe(result_df, use_container_width=True)
