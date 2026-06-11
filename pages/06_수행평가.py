@@ -11,7 +11,7 @@ st.set_page_config(
 st.title("🚗 2025년 교통사고 연령별 분석")
 
 # 파일 읽기
-df = pd.read_csv("jjjjjjjh(1).csv", encoding="cp949")
+df = pd.read_csv("jjjjjjjh.csv", encoding="cp949")
 
 # 실제 헤더 만들기
 age_names = [
