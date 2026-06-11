@@ -3,21 +3,35 @@ import pandas as pd
 import plotly.graph_objects as go
 
 st.set_page_config(
-    page_title="교통사고 연령별 분석",
+    page_title="서울 교통사고 분석",
     page_icon="🚗",
     layout="wide"
 )
 
-st.title("🚗 2025년 교통사고 연령별 분석")
+st.title("🚗 서울시 자치구별 교통사고 분석")
 
-# ==========================
-# CSV 불러오기
-# ==========================
+# 데이터 불러오기
 df = pd.read_csv("jjjjjjjh.csv", encoding="cp949")
 
-# 서울 전체 데이터
-death_row = df.iloc[2]
-injury_row = df.iloc[3]
+# 실제 데이터만 사용
+df = df.iloc[2:].reset_index(drop=True)
+
+# 구 목록
+gu_list = sorted(
+    [x for x in df["자치구별(2)"].unique()
+     if x not in ["소계", "자치구별(2)"]]
+)
+
+selected_gu = st.selectbox(
+    "🏙️ 자치구를 선택하세요",
+    gu_list
+)
+
+# 선택 구 데이터
+gu_df = df[df["자치구별(2)"] == selected_gu]
+
+death_row = gu_df[gu_df["항목"] == "사망자수"].iloc[0]
+injury_row = gu_df[gu_df["항목"] == "부상자수"].iloc[0]
 
 ages = [
     "12세 이하",
@@ -30,119 +44,105 @@ ages = [
     "65세 이상"
 ]
 
-death_values = [
-    int(death_row["2025.1"]),
-    int(death_row["2025.2"]),
-    int(death_row["2025.3"]),
-    int(death_row["2025.4"]),
-    int(death_row["2025.5"]),
-    int(death_row["2025.6"]),
-    int(death_row["2025.7"]),
-    int(death_row["2025.8"])
+cols = [
+    "2025.1",
+    "2025.2",
+    "2025.3",
+    "2025.4",
+    "2025.5",
+    "2025.6",
+    "2025.7",
+    "2025.8"
 ]
 
-injury_values = [
-    int(injury_row["2025.1"]),
-    int(injury_row["2025.2"]),
-    int(injury_row["2025.3"]),
-    int(injury_row["2025.4"]),
-    int(injury_row["2025.5"]),
-    int(injury_row["2025.6"]),
-    int(injury_row["2025.7"]),
-    int(injury_row["2025.8"])
-]
+def convert_value(v):
+    if str(v).strip() == "-":
+        return 0
+    return int(v)
 
-# ==========================
+death_values = [convert_value(death_row[c]) for c in cols]
+injury_values = [convert_value(injury_row[c]) for c in cols]
+
+# -----------------------
 # 부상자수 그래프
-# ==========================
-st.subheader("🔵 연령별 부상자수")
+# -----------------------
 
-fig_injury = go.Figure()
+st.subheader(f"🔵 {selected_gu} 연령별 부상자수")
 
-fig_injury.add_trace(
+fig1 = go.Figure()
+
+fig1.add_trace(
     go.Scatter(
         x=ages,
         y=injury_values,
         mode="lines+markers",
         line=dict(color="blue", width=4),
-        marker=dict(size=10),
-        name="부상자수"
+        marker=dict(size=10)
     )
 )
 
-fig_injury.update_layout(
-    title="연령별 부상자수",
+fig1.update_layout(
+    height=500,
     xaxis_title="연령대",
-    yaxis_title="부상자수(명)",
-    height=500
+    yaxis_title="부상자수(명)"
 )
 
-fig_injury.update_yaxes(
-    tickvals=[0,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000],
-    ticktext=[
-        "0명","1천명","2천명","3천명","4천명",
-        "5천명","6천명","7천명","8천명","9천명","1만명"
-    ]
-)
+fig1.update_yaxes(tickformat=",d")
 
-st.plotly_chart(fig_injury, use_container_width=True)
+st.plotly_chart(fig1, use_container_width=True)
 
-# ==========================
+# -----------------------
 # 사망자수 그래프
-# ==========================
-st.subheader("🔴 연령별 사망자수")
+# -----------------------
 
-fig_death = go.Figure()
+st.subheader(f"🔴 {selected_gu} 연령별 사망자수")
 
-fig_death.add_trace(
+fig2 = go.Figure()
+
+fig2.add_trace(
     go.Scatter(
         x=ages,
         y=death_values,
         mode="lines+markers",
         line=dict(color="red", width=4),
-        marker=dict(size=10),
-        name="사망자수"
+        marker=dict(size=10)
     )
 )
 
-fig_death.update_layout(
-    title="연령별 사망자수",
+fig2.update_layout(
+    height=500,
     xaxis_title="연령대",
-    yaxis_title="사망자수(명)",
-    height=500
+    yaxis_title="사망자수(명)"
 )
 
-fig_death.update_yaxes(
-    tickvals=[0,20,40,60,80,100,120],
-    ticktext=[
-        "0명","20명","40명","60명",
-        "80명","100명","120명"
-    ]
-)
+fig2.update_yaxes(tickformat=",d")
 
-st.plotly_chart(fig_death, use_container_width=True)
+st.plotly_chart(fig2, use_container_width=True)
 
-# ==========================
+# -----------------------
 # 표
-# ==========================
-st.subheader("📋 데이터")
-
-injury_table = pd.DataFrame({
-    "연령대": ages,
-    "부상자수": injury_values
-})
-
-death_table = pd.DataFrame({
-    "연령대": ages,
-    "사망자수": death_values
-})
+# -----------------------
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.write("🔵 부상자수")
-    st.dataframe(injury_table, use_container_width=True)
+    st.subheader("🔵 부상자수")
+    st.dataframe(
+        pd.DataFrame({
+            "연령대": ages,
+            "부상자수": injury_values
+        }),
+        hide_index=True,
+        use_container_width=True
+    )
 
 with col2:
-    st.write("🔴 사망자수")
-    st.dataframe(death_table, use_container_width=True)
+    st.subheader("🔴 사망자수")
+    st.dataframe(
+        pd.DataFrame({
+            "연령대": ages,
+            "사망자수": death_values
+        }),
+        hide_index=True,
+        use_container_width=True
+    )
