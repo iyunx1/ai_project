@@ -13,7 +13,7 @@ st.title("🚗 2025년 교통사고 연령별 분석")
 # ==========================
 # CSV 불러오기
 # ==========================
-df = pd.read_csv("jjjjjjjh(1).csv", encoding="cp949")
+df = pd.read_csv("jjjjjjjh.csv", encoding="cp949")
 
 # 서울 전체 데이터
 death_row = df.iloc[2]
